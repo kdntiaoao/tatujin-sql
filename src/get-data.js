@@ -10,8 +10,9 @@ const getDistricts = db.prepare(`
     ELSE NULL
     END AS district,
     pref_name,
-    population
-  FROM populations;
+    SUM(population)
+  FROM populations
+  GROUP BY district;
 `);
 
 console.log(getDistricts.all());
