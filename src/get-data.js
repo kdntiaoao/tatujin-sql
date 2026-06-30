@@ -2,6 +2,17 @@ import Database from "better-sqlite3";
 
 const db = new Database("myapp.db");
 
-const getAllUsers = db.prepare("SELECT * FROM users");
-const users = getAllUsers.all();
-console.log(users);
+// エリアごとの人口を取得する
+const getDistricts = db.prepare(`
+  SELECT
+    CASE WHEN pref_name IN ('京都', '大阪') THEN '関西'
+    WHEN pref_name IN ('福岡', '佐賀') THEN '九州'
+    ELSE NULL
+    END AS district,
+    pref_name,
+    SUM(population)
+  FROM populations
+  GROUP BY district;
+`);
+
+console.log(getDistricts.all());
