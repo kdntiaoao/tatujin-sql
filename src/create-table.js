@@ -3,11 +3,10 @@ import Database from "better-sqlite3";
 const db = new Database("myapp.db");
 
 db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
+  CREATE TABLE IF NOT EXISTS populations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE,
-    age INTEGER,
+    pref_name TEXT NOT NULL UNIQUE,
+    population INTEGER,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )
 `);
