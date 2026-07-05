@@ -53,3 +53,14 @@ docker start -ai postgres-playground
 # PostgreSQL のコンテナを削除する
 docker rm postgres-playground
 ```
+
+## フォーマット
+
+```bash
+# SQL をフォーマットしてクリップボードにコピーする
+echo 'select * from tbl where id = 3' | pnx sql-formatter | tee >(pbcopy)
+
+# ファイルをフォーマットする
+pnx sql-formatter sample.sql -o sample.sql
+cat sample.sql | pnx sql-formatter | tee sample.sql
+```
