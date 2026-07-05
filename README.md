@@ -59,7 +59,7 @@ docker rm postgres-playground
 ### Prettier plugin SQL-CST を使った方法
 
 ```bash
-pnx prettier -w --plugin prettier-plugin-sql-cst sample.sql
+pnx prettier -w sample.sql
 ```
 
 ### SQL Formatter を使った方法
