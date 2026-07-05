@@ -19,5 +19,9 @@
   "type": "module",
   "dependencies": {
     "better-sqlite3": "^12.11.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.4",
+    "prettier-plugin-sql-cst": "^0.22.1"
   }
 }

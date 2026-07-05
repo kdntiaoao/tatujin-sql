@@ -56,6 +56,14 @@ docker rm postgres-playground
 
 ## フォーマット
 
+### Prettier plugin SQL-CST を使った方法
+
+```bash
+pnx prettier -w --plugin prettier-plugin-sql-cst sample.sql
+```
+
+### SQL Formatter を使った方法
+
 ```bash
 # SQL をフォーマットしてクリップボードにコピーする
 echo 'select * from tbl where id = 3' | pnx sql-formatter | tee >(pbcopy)
