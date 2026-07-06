@@ -369,3 +369,225 @@ DELETE FROM Products_NoRedundant
 WHERE row_num > 1;
 
 SELECT * FROM Products_NoRedundant;
+
+-- 1-5 EXISTS 述語の使い方
+
+CREATE TABLE TestScores (
+  student_id INTEGER,
+  subject VARCHAR(32),
+  score INTEGER,
+  PRIMARY KEY (student_id, subject)
+);
+INSERT INTO TestScores VALUES (100, '算数', 100);
+INSERT INTO TestScores VALUES (100, '国語', 80);
+INSERT INTO TestScores VALUES (100, '理科', 80);
+INSERT INTO TestScores VALUES (200, '算数', 80);
+INSERT INTO TestScores VALUES (200, '国語', 95);
+INSERT INTO TestScores VALUES (300, '算数', 40);
+INSERT INTO TestScores VALUES (300, '国語', 90);
+INSERT INTO TestScores VALUES (300, '社会', 55);
+INSERT INTO TestScores VALUES (400, '算数', 80);
+
+SELECT DISTINCT
+  student_id,
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '算数'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '算数') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "算数",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '国語'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '国語') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "国語",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '理科'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '理科') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "理科",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '社会'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '社会') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "社会"
+FROM TestScores AS TS1
+GROUP BY student_id;
+
+SELECT DISTINCT
+  student_id,
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '算数'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '算数') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "算数",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '国語'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '国語') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "国語",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '理科'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '理科') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "理科",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '社会'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '社会') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "社会"
+FROM TestScores AS TS1
+WHERE
+  NOT EXISTS (
+    SELECT *
+    FROM TestScores AS TS2
+    WHERE TS2.student_id = TS1.student_id AND TS2.score < 50
+  )
+GROUP BY student_id;
+
+SELECT student_id
+FROM TestScores AS TS1
+WHERE
+  NOT EXISTS (
+    SELECT *
+    FROM TestScores AS TS2
+    WHERE
+      (
+        TS2.student_id = TS1.student_id
+        AND (
+          TS2.subject = '算数'
+          AND TS2.score < 80
+          OR TS2.subject = '国語'
+          AND TS2.score < 50
+        )
+      )
+  )
+GROUP BY student_id;
+-- 国語のデータが存在しない 400 を除外
+SELECT student_id
+FROM TestScores AS TS1
+WHERE
+  subject IN ('算数', '国語')
+  AND NOT EXISTS (
+    SELECT *
+    FROM TestScores AS TS2
+    WHERE
+      (
+        TS2.student_id = TS1.student_id
+        AND (
+          (TS2.subject = '算数' AND TS2.score < 80)
+          OR (TS2.subject = '国語' AND TS2.score < 50)
+        )
+      )
+  )
+GROUP BY student_id
+HAVING COUNT(*) = 2;
+
+SELECT
+  student_id,
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '算数'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '算数') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "算数",
+  CASE
+    WHEN (
+      SELECT COUNT(subject)
+      FROM TestScores
+      WHERE student_id = TS1.student_id AND subject = '国語'
+    ) > 0 THEN SUM(
+      CASE
+        WHEN (subject = '国語') THEN score
+        ELSE 0
+      END
+    )
+    ELSE NULL
+  END AS "国語"
+FROM TestScores AS TS1
+WHERE
+  subject IN ('算数', '国語')
+  AND NOT EXISTS (
+    SELECT *
+    FROM TestScores AS TS2
+    WHERE
+      (
+        TS2.student_id = TS1.student_id
+        AND (
+          (TS2.subject = '算数' AND TS2.score < 80)
+          OR (TS2.subject = '国語' AND TS2.score < 50)
+        )
+      )
+  )
+GROUP BY student_id
+HAVING COUNT(*) = 2;
