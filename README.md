@@ -56,6 +56,12 @@ docker rm postgres-playground
 
 ## フォーマット
 
+### SQLFluff を使った方法
+
+```bash
+sqlfluff fix sample.sql
+```
+
 ### Prettier plugin SQL-CST を使った方法
 
 ```bash
