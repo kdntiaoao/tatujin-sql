@@ -1,5 +1,11 @@
 {
   "edit_predictions": {
-    "disabled_globs": ["sample.sql"],
+    "disabled_globs": ["sample.sql"]
   },
+  "formatter": {
+    "external": {
+      "command": "node_modules/.bin/prettier",
+      "arguments": ["--stdin-filepath", "{buffer_path}"]
+    }
+  }
 }
