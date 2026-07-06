@@ -53,32 +53,32 @@ SELECT
       WHEN sex = '1' THEN '男'
       ELSE '女'
     END
-  ) AS "性別",
-  SUM(population) AS "全国",
+  ) AS 性別,
+  SUM(population) AS 全国,
   SUM(
     CASE
       WHEN pref_name = '徳島' THEN population
       ELSE 0
     END
-  ) AS "徳島",
+  ) AS 徳島,
   SUM(
     CASE
       WHEN pref_name = '香川' THEN population
       ELSE 0
     END
-  ) AS "香川",
+  ) AS 香川,
   SUM(
     CASE
       WHEN pref_name = '愛媛' THEN population
       ELSE 0
     END
-  ) AS "愛媛",
+  ) AS 愛媛,
   SUM(
     CASE
       WHEN pref_name = '高知' THEN population
       ELSE 0
     END
-  ) AS "高知",
+  ) AS 高知,
   SUM(
     CASE
       WHEN pref_name IN ('徳島', '香川', '愛媛', '高知') THEN population
@@ -192,20 +192,20 @@ SELECT
 FROM emp_info;
 -- 実行計画 (推定値)
 EXPLAIN
-  SELECT
-    depname,
-    empid,
-    salary,
-    AVG(salary) OVER (PARTITION BY depname) AS avg_salary
-  FROM emp_info;
+SELECT
+  depname,
+  empid,
+  salary,
+  AVG(salary) OVER (PARTITION BY depname) AS avg_salary
+FROM emp_info;
 -- 実行と合わせて推定値を出す
 EXPLAIN ANALYZE
-  SELECT
-    depname,
-    empid,
-    salary,
-    AVG(salary) OVER (PARTITION BY depname) AS avg_salary
-  FROM emp_info;
+SELECT
+  depname,
+  empid,
+  salary,
+  AVG(salary) OVER (PARTITION BY depname) AS avg_salary
+FROM emp_info;
 
 CREATE TABLE fibonacci_numbers (
   id SERIAL PRIMARY KEY,
@@ -289,7 +289,7 @@ SELECT DISTINCT
   P1.price
 FROM
   Products AS P1
-  INNER JOIN Products AS P2 ON P1.name > P2.name AND P1.price = P2.price
+INNER JOIN Products AS P2 ON P1.name > P2.name AND P1.price = P2.price
 ORDER BY P1.price;
 
 -- 一回りセット
@@ -306,10 +306,12 @@ ORDER BY P1.price;
 -- INSERT INTO Products (name, price) VALUES('いちご',	100);
 -- INSERT INTO Products (name, price) VALUES('バナナ',	100);
 
-SELECT DISTINCT P1.name, P1.price
+SELECT DISTINCT
+  P1.name,
+  P1.price
 FROM
   Products AS P1
-  INNER JOIN Products AS P2 ON P1.price = P2.price AND P1.name != P2.name
+INNER JOIN Products AS P2 ON P1.price = P2.price AND P1.name != P2.name
 ORDER BY P1.price;
 -- 上記と同じ
 -- SELECT
@@ -338,7 +340,7 @@ SELECT
   P2.name AS name_2
 FROM
   Products AS P1
-  LEFT OUTER JOIN Products AS P2 ON P1.name >= P2.name;
+LEFT OUTER JOIN Products AS P2 ON P1.name >= P2.name;
 
 -- 演習問題3-②：ウィンドウ関数で重複削除
 -- 一回リセット
@@ -355,14 +357,14 @@ INSERT INTO Products VALUES ('バナナ', 80);
 
 -- (name, price)のパーティションに一意な連番を振ったテーブルを作成
 CREATE TABLE Products_NoRedundant AS
-  SELECT
-    ROW_NUMBER() OVER (
-      PARTITION BY name, price
-      ORDER BY name
-    ) AS row_num,
-    name,
-    price
-  FROM Products;
+SELECT
+  name,
+  price,
+  ROW_NUMBER() OVER (
+    PARTITION BY name, price
+    ORDER BY name
+  ) AS row_num
+FROM Products;
 
 -- 連番が1以外のレコードを削除
 DELETE FROM Products_NoRedundant
@@ -395,53 +397,53 @@ SELECT DISTINCT
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '算数'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '算数') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "算数",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '算数') THEN score
+          ELSE 0
+        END
+      )
+  END AS 算数,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '国語'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '国語') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "国語",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '国語') THEN score
+          ELSE 0
+        END
+      )
+  END AS 国語,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '理科'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '理科') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "理科",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '理科') THEN score
+          ELSE 0
+        END
+      )
+  END AS 理科,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '社会'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '社会') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "社会"
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '社会') THEN score
+          ELSE 0
+        END
+      )
+  END AS 社会
 FROM TestScores AS TS1
 GROUP BY student_id;
 
@@ -452,53 +454,53 @@ SELECT DISTINCT
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '算数'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '算数') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "算数",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '算数') THEN score
+          ELSE 0
+        END
+      )
+  END AS 算数,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '国語'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '国語') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "国語",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '国語') THEN score
+          ELSE 0
+        END
+      )
+  END AS 国語,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '理科'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '理科') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "理科",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '理科') THEN score
+          ELSE 0
+        END
+      )
+  END AS 理科,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '社会'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '社会') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "社会"
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '社会') THEN score
+          ELSE 0
+        END
+      )
+  END AS 社会
 FROM TestScores AS TS1
 WHERE
   NOT EXISTS (
@@ -553,27 +555,27 @@ SELECT
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '算数'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '算数') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "算数",
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '算数') THEN score
+          ELSE 0
+        END
+      )
+  END AS 算数,
   CASE
     WHEN (
       SELECT COUNT(subject)
       FROM TestScores
       WHERE student_id = TS1.student_id AND subject = '国語'
-    ) > 0 THEN SUM(
-      CASE
-        WHEN (subject = '国語') THEN score
-        ELSE 0
-      END
-    )
-    ELSE NULL
-  END AS "国語"
+    ) > 0
+      THEN SUM(
+        CASE
+          WHEN (subject = '国語') THEN score
+          ELSE 0
+        END
+      )
+  END AS 国語
 FROM TestScores AS TS1
 WHERE
   subject IN ('算数', '国語')
