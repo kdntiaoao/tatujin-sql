@@ -597,3 +597,141 @@ WHERE
   )
 GROUP BY student_id
 HAVING COUNT(*) = 2;
+
+-- 演習問題5-①：配列テーブル行持ちの場合
+
+/* 5-1：配列テーブル――行持ちの場合 */
+CREATE TABLE ArrayTbl2 (
+  key CHAR(1) NOT NULL,
+  i INTEGER NOT NULL,
+  val INTEGER,
+  PRIMARY KEY (key, i)
+);
+
+/* AはオールNULL、Bは一つだけ非NULL、Cはオール非NULL */
+INSERT INTO ArrayTbl2 VALUES ('A', 1, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 2, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 3, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 4, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 5, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 6, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 7, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 8, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 9, NULL);
+INSERT INTO ArrayTbl2 VALUES ('A', 10, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 1, 3);
+INSERT INTO ArrayTbl2 VALUES ('B', 2, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 3, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 4, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 5, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 6, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 7, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 8, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 9, NULL);
+INSERT INTO ArrayTbl2 VALUES ('B', 10, NULL);
+INSERT INTO ArrayTbl2 VALUES ('C', 1, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 2, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 3, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 4, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 5, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 6, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 7, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 8, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 9, 1);
+INSERT INTO ArrayTbl2 VALUES ('C', 10, 1);
+
+SELECT A1.key
+FROM ArrayTbl2 A1
+WHERE
+  NOT EXISTS (
+    SELECT A2.key
+    FROM ArrayTbl2 A2
+    WHERE A1.key = A2.key AND (A2.val IS NULL OR A2.val != 1)
+  )
+GROUP BY A1.key;
+
+
+SELECT A1.key
+FROM ArrayTbl2 A1
+WHERE
+  1 = ALL(
+    SELECT COALESCE(A2.val, 0) FROM ArrayTbl2 A2
+    WHERE A1.key = A2.key
+  )
+GROUP BY A1.key;
+
+SELECT key
+FROM ArrayTbl2
+GROUP BY key
+HAVING SUM(COALESCE(val, 0)) = 10;
+
+-- 演習問題5-②：ALL述語による全称量化
+
+CREATE TABLE Projects
+(
+  project_id VARCHAR(32),
+  step_nbr INTEGER,
+  status VARCHAR(32),
+  PRIMARY KEY (project_id, step_nbr)
+);
+
+INSERT INTO Projects VALUES ('AA100', 0, '完了');
+INSERT INTO Projects VALUES ('AA100', 1, '待機');
+INSERT INTO Projects VALUES ('AA100', 2, '待機');
+INSERT INTO Projects VALUES ('B200', 0, '待機');
+INSERT INTO Projects VALUES ('B200', 1, '待機');
+INSERT INTO Projects VALUES ('CS300', 0, '完了');
+INSERT INTO Projects VALUES ('CS300', 1, '完了');
+INSERT INTO Projects VALUES ('CS300', 2, '待機');
+INSERT INTO Projects VALUES ('CS300', 3, '待機');
+INSERT INTO Projects VALUES ('DY400', 0, '完了');
+INSERT INTO Projects VALUES ('DY400', 1, '完了');
+INSERT INTO Projects VALUES ('DY400', 2, '完了');
+
+SELECT
+  P1.project_id,
+  P1.step_nbr,
+  P1.status
+FROM Projects P1
+WHERE '完了' = ALL(
+  SELECT P2.status FROM Projects P2
+  WHERE P1.project_id = P2.project_id AND P2.step_nbr <= 1
+);
+
+-- 演習問題5-③：素数を求める
+
+CREATE TABLE Digits
+(digit INTEGER PRIMARY KEY);
+
+INSERT INTO Digits VALUES (0);
+INSERT INTO Digits VALUES (1);
+INSERT INTO Digits VALUES (2);
+INSERT INTO Digits VALUES (3);
+INSERT INTO Digits VALUES (4);
+INSERT INTO Digits VALUES (5);
+INSERT INTO Digits VALUES (6);
+INSERT INTO Digits VALUES (7);
+INSERT INTO Digits VALUES (8);
+INSERT INTO Digits VALUES (9);
+
+DROP TABLE Numbers;
+CREATE TABLE Numbers
+AS
+SELECT D1.digit + 1 + (D2.digit * 10) AS num
+FROM Digits D1 CROSS JOIN Digits D2
+WHERE D1.digit + 1 + (D2.digit * 10) BETWEEN 1 AND 100;
+
+SELECT COUNT(num) FROM Numbers;
+SELECT MIN(num) FROM Numbers;
+SELECT MAX(num) FROM Numbers;
+SELECT num FROM Numbers
+ORDER BY num LIMIT 20;
+
+SELECT N1.num
+FROM Numbers N1
+WHERE
+  N1.num > 1 AND NOT EXISTS (
+    SELECT 1 FROM Numbers N2
+    WHERE N2.num != 1 AND N1.num > N2.num AND N1.num % N2.num = 0
+  )
+ORDER BY N1.num;
