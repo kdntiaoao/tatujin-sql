@@ -1,5 +1,5 @@
 {
   "edit_predictions": {
-    "disabled_globs": ["sample.sql"]
-  }
+    "disabled_globs": ["sample*.sql"],
+  },
 }
