@@ -148,3 +148,127 @@ SELECT
   prc_amt,
   ROUND(AVG(prc_amt) OVER (ORDER BY prc_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)) AS mvg_sum
 FROM Accounts;
+
+-- 演習問題8-①：結合が先か、集約が先か？
+
+CREATE TABLE TblSex
+(
+  sex_cd CHAR(1),
+  sex VARCHAR(5),
+  PRIMARY KEY (sex_cd)
+);
+
+CREATE TABLE TblAge
+(
+  age_class CHAR(1),
+  age_range VARCHAR(30),
+  PRIMARY KEY (age_class)
+);
+
+CREATE TABLE TblPop
+(
+  pref_name VARCHAR(30),
+  age_class CHAR(1),
+  sex_cd CHAR(1),
+  population INTEGER,
+  PRIMARY KEY (pref_name, age_class, sex_cd)
+);
+
+INSERT INTO TblSex (sex_cd, sex) VALUES ('m', '男');
+INSERT INTO TblSex (sex_cd, sex) VALUES ('f', '女');
+
+INSERT INTO TblAge (age_class, age_range) VALUES ('1', '21～30歳');
+INSERT INTO TblAge (age_class, age_range) VALUES ('2', '31～40歳');
+INSERT INTO TblAge (age_class, age_range) VALUES ('3', '41～50歳');
+
+INSERT INTO TblPop VALUES ('秋田', '1', 'm', 400);
+INSERT INTO TblPop VALUES ('秋田', '3', 'm', 1000);
+INSERT INTO TblPop VALUES ('秋田', '1', 'f', 800);
+INSERT INTO TblPop VALUES ('秋田', '3', 'f', 1000);
+INSERT INTO TblPop VALUES ('青森', '1', 'm', 700);
+INSERT INTO TblPop VALUES ('青森', '1', 'f', 500);
+INSERT INTO TblPop VALUES ('青森', '3', 'f', 800);
+INSERT INTO TblPop VALUES ('東京', '1', 'm', 900);
+INSERT INTO TblPop VALUES ('東京', '1', 'f', 1500);
+INSERT INTO TblPop VALUES ('東京', '3', 'f', 1200);
+INSERT INTO TblPop VALUES ('千葉', '1', 'm', 900);
+INSERT INTO TblPop VALUES ('千葉', '1', 'f', 1000);
+INSERT INTO TblPop VALUES ('千葉', '3', 'f', 900);
+
+SELECT
+  MASTER.age_class,
+  MASTER.sex_cd,
+  DATA.pop_tohoku,
+  DATA.pop_kanto
+FROM (
+  SELECT
+    TA.age_class,
+    TS.sex_cd
+  FROM TblAge TA CROSS JOIN TblSex TS
+) MASTER
+LEFT OUTER JOIN (
+  SELECT
+    age_class,
+    sex_cd,
+    SUM(CASE WHEN pref_name IN ('青森', '秋田') THEN population END) AS pop_tohoku,
+    SUM(CASE WHEN pref_name IN ('東京', '千葉') THEN population END) AS pop_kanto
+  FROM TblPop
+  GROUP BY age_class, sex_cd
+) DATA
+  ON
+    MASTER.age_class = DATA.age_class
+    AND MASTER.sex_cd = DATA.sex_cd
+ORDER BY MASTER.age_class ASC, MASTER.sex_cd DESC;
+
+SELECT
+  MASTER.age_class,
+  MASTER.sex_cd,
+  SUM(CASE WHEN DATA.pref_name IN ('青森', '秋田') THEN DATA.population END) AS pop_tohoku,
+  SUM(CASE WHEN DATA.pref_name IN ('東京', '千葉') THEN DATA.population END) AS pop_kanto
+FROM (
+  SELECT
+    TA.age_class,
+    TS.sex_cd
+  FROM TblAge TA CROSS JOIN TblSex TS
+) MASTER
+LEFT OUTER JOIN TblPop DATA
+  ON
+    MASTER.age_class = DATA.age_class
+    AND MASTER.sex_cd = DATA.sex_cd
+GROUP BY MASTER.age_class, MASTER.sex_cd
+ORDER BY MASTER.age_class ASC, MASTER.sex_cd DESC;
+
+-- 演習問題8-②：子どもの数にご用心
+
+CREATE TABLE Personnel
+(
+  employee VARCHAR(32),
+  child_1 VARCHAR(32),
+  child_2 VARCHAR(32),
+  child_3 VARCHAR(32),
+  PRIMARY KEY (employee)
+);
+
+INSERT INTO Personnel VALUES ('赤井', '一郎', '二郎', '三郎');
+INSERT INTO Personnel VALUES ('工藤', '春子', '夏子', NULL);
+INSERT INTO Personnel VALUES ('鈴木', '夏子', NULL, NULL);
+INSERT INTO Personnel VALUES ('吉田', NULL, NULL, NULL);
+
+SELECT
+  P.employee,
+  COUNT(P.child) AS child_count
+FROM (SELECT
+  employee,
+  child_1 AS child
+FROM Personnel
+UNION ALL
+SELECT
+  employee,
+  child_2 AS child
+FROM Personnel
+UNION ALL
+SELECT
+  employee,
+  child_3 AS child
+FROM Personnel) P
+GROUP BY P.employee;
