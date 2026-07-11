@@ -90,9 +90,61 @@ INSERT INTO ShopItems VALUES ('大阪', '紙オムツ');
 INSERT INTO ShopItems VALUES ('大阪', '自転車');
 
 SELECT
-  shop,
-  COUNT(shop) AS my_item_cnt,
-  ((SELECT COUNT(item) FROM Items) - COUNT(shop)) AS diff_cnt
-FROM ShopItems
-WHERE item IN (SELECT item FROM Items)
-GROUP BY shop;
+  SI.shop,
+  COUNT(SI.shop) AS my_item_cnt,
+  ((SELECT COUNT(I.item) FROM Items I) - COUNT(SI.shop)) AS diff_cnt
+FROM ShopItems SI
+WHERE SI.item IN (SELECT I.item FROM Items I)
+GROUP BY SI.shop;
+
+-- 演習問題7-①：移動平均
+
+CREATE TABLE Accounts
+(
+  prc_date VARCHAR(16) NOT NULL,
+  prc_amt INTEGER NOT NULL
+);
+
+INSERT INTO Accounts VALUES ('2018-10-16', 12000);
+INSERT INTO Accounts VALUES ('2018-10-31', -15000);
+INSERT INTO Accounts VALUES ('2018-11-03', 34000);
+INSERT INTO Accounts VALUES ('2018-11-04', -5000);
+INSERT INTO Accounts VALUES ('2018-11-06', 7200);
+INSERT INTO Accounts VALUES ('2018-11-11', 11000);
+
+SELECT
+  prc_date,
+  prc_amt,
+  ROUND(AVG(prc_amt) OVER (ORDER BY prc_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)) AS mvg_sum
+FROM Accounts;
+
+/*
+  prc_date  | prc_amt | round
+------------+---------+-------
+ 2018-10-16 |   12000 | 12000
+ 2018-10-31 |  -15000 | -1500
+ 2018-11-03 |   34000 | 10333
+ 2018-11-04 |   -5000 |  4667
+ 2018-11-06 |    7200 | 12067
+ 2018-11-11 |   11000 |  4400
+*/
+
+SELECT
+  A1.prc_date,
+  A1.prc_amt,
+  (
+    SELECT ROUND(AVG(A2.prc_amt)) FROM Accounts A2
+    WHERE A2.prc_date <= A1.prc_date AND (
+      SELECT COUNT(A3.prc_date) FROM Accounts A3
+      WHERE A3.prc_date <= A1.prc_date AND A3.prc_date >= A2.prc_date
+    ) <= 3
+  ) AS mvg_sum
+FROM Accounts A1;
+
+-- 演習問題7-②：移動平均　その2
+
+SELECT
+  prc_date,
+  prc_amt,
+  ROUND(AVG(prc_amt) OVER (ORDER BY prc_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)) AS mvg_sum
+FROM Accounts;
