@@ -6,6 +6,39 @@
 
 ## お試し環境
 
+### docker を使った方法
+
+```bash
+# PostgreSQL のコンテナを起動する
+docker run --name postgres-playground -e POSTGRES_PASSWORD=password postgres
+docker run --name tatujin-sql-playground -e POSTGRES_PASSWORD=password postgres
+
+# コンテナ内の postgres データベースに postgres ユーザーで接続する
+docker exec -it postgres-playground psql -U postgres -d postgres
+docker exec -it tatujin-sql-playground psql -U postgres -d postgres
+
+# PostgreSQL のコンテナを再起動する
+docker start -ai postgres-playground
+
+# PostgreSQL のコンテナを削除する
+docker rm postgres-playground
+```
+
+### PostgreSQL のコマンド例
+
+```sql
+# データベース一覧
+\l
+SELECT datname FROM pg_database;
+
+# データベースの作成
+CREATE DATABASE playground;
+
+# テーブル一覧
+\dt
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+```
+
 ### better-sqlite3 を使った方法
 
 #### 1. インストール
@@ -36,22 +69,6 @@ src/get-data.js に取得したいデータのSQLを記載して、以下のコ�
 
 ```bash
 node src/get-data.js
-```
-
-### docker を使った方法
-
-```bash
-# PostgreSQL のコンテナを起動する
-docker run --name postgres-playground -e POSTGRES_PASSWORD=password postgres
-
-# PostgreSQL のコンテナに接続する
-docker exec -it postgres-playground psql -U postgres -d postgres
-
-# PostgreSQL のコンテナを再起動する
-docker start -ai postgres-playground
-
-# PostgreSQL のコンテナを削除する
-docker rm postgres-playground
 ```
 
 ## フォーマット
