@@ -19,6 +19,7 @@ docker exec -it tatujin-sql-playground psql -U postgres -d postgres
 
 # PostgreSQL のコンテナを再起動する
 docker start -ai postgres-playground
+docker start -ai tatujin-sql-playground
 
 # PostgreSQL のコンテナを削除する
 docker rm postgres-playground

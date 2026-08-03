@@ -1,6 +1,6 @@
 {
   "edit_predictions": {
-    "disabled_globs": ["sample*.sql"],
+    "disabled_globs": ["sample*.sql", "**/sample*.sql"],
   },
   "languages": {
     "SQL": {

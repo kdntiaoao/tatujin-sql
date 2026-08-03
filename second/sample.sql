@@ -140,3 +140,42 @@ SELECT
   name,
   ROW_NUMBER() OVER (PARTITION BY name ORDER BY price) AS row_num
 FROM ProductsWithDuplicates;
+
+-- 1-5
+
+SELECT DISTINCT key
+FROM ArrayTbl2 A1
+WHERE NOT EXISTS (
+  SELECT * FROM ArrayTbl2 A2
+  WHERE A1.key = A2.key AND (A2.val IS NULL OR A2.val <> 1)
+);
+
+SELECT key FROM ArrayTbl2
+GROUP BY key
+HAVING COUNT(*) = SUM(
+  CASE WHEN val = 1 THEN 1 ELSE 0 END
+);
+
+
+SELECT
+  P1.project_id,
+  P1.step_nbr,
+  P1.status
+FROM Projects P1
+WHERE P1.status = ALL(
+  SELECT P2.status FROM Projects P2
+  WHERE
+    P1.project_id = P2.project_id
+    AND P2.status = CASE WHEN P2.step_nbr <= 1 THEN '完了' ELSE '待機' END
+);
+
+
+SELECT N1.num FROM Numbers N1
+WHERE
+  N1.num <> 1
+  AND NOT EXISTS (
+    SELECT * FROM Numbers N2
+    WHERE N2.num <> 1 AND N1.num > N2.num AND N1.num % N2.num = 0
+  )
+ORDER BY N1.num
+LIMIT 5;
