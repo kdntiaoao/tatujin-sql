@@ -284,3 +284,88 @@ SELECT
   )
 FROM Accounts A2
 ORDER BY A2.prc_date;
+
+
+-- 1-8
+
+SELECT
+  TA.age_class,
+  TS.sex_cd,
+  DATA.pop_tohoku,
+  DATA.pop_kanto
+FROM TblAge TA
+CROSS JOIN TblSex TS
+LEFT OUTER JOIN
+  (SELECT
+    age_class,
+    sex_cd,
+    SUM(CASE
+      WHEN pref_name IN ('青森', '秋田')
+        THEN population
+    END) AS pop_tohoku,
+    SUM(CASE
+      WHEN pref_name IN ('東京', '千葉')
+        THEN population
+    END) AS pop_kanto
+  FROM TblPop
+  GROUP BY age_class, sex_cd) DATA
+  ON
+    TA.age_class = DATA.age_class
+    AND TS.sex_cd = DATA.sex_cd;
+
+
+CREATE VIEW Children (child)
+AS SELECT child_1 FROM Personnel
+UNION
+SELECT child_2 FROM Personnel
+UNION
+SELECT child_3 FROM Personnel;
+
+SELECT
+  EMP.employee,
+  COUNT(Children.child) AS child_cnt
+FROM Personnel EMP
+LEFT OUTER JOIN Children
+  ON Children.child IN (EMP.child_1, EMP.child_2, EMP.child_3)
+GROUP BY EMP.employee
+ORDER BY child_cnt DESC;
+
+
+drop table Class_A;
+drop table Class_B;
+
+CREATE TABLE Class_A
+(id char(1),
+ name varchar(30),
+ PRIMARY KEY(id));
+
+CREATE TABLE Class_B
+(id   char(1),
+ name varchar(30),
+ PRIMARY KEY(id));
+
+INSERT INTO Class_A (id, name) VALUES('1', '田中');
+INSERT INTO Class_A (id, name) VALUES('2', '鈴木');
+INSERT INTO Class_A (id, name) VALUES('3', '伊集院');
+
+INSERT INTO Class_B (id, name) VALUES('1', '田中');
+INSERT INTO Class_B (id, name) VALUES('2', '内海');
+INSERT INTO Class_B (id, name) VALUES('4', '西園寺');
+
+MERGE INTO Class_A tgt
+USING Class_B src
+  ON tgt.id = src.id
+-- ① キーが一致 → 既存行を更新
+WHEN MATCHED THEN
+  UPDATE SET
+    name = src.name
+-- ② キーが不一致（ソースにだけ存在） → 新規行を挿入
+WHEN NOT MATCHED THEN
+  INSERT (id, name)
+  VALUES (src.id, src.name);
+
+SELECT
+  id,
+  name
+FROM Class_A
+ORDER BY id;
