@@ -179,3 +179,108 @@ WHERE
   )
 ORDER BY N1.num
 LIMIT 5;
+
+-- 1-6
+
+CREATE TABLE SeqTblWithNoGaps (
+  seq INTEGER PRIMARY KEY,
+  name VARCHAR(16) NOT NULL
+);
+
+INSERT INTO SeqTblWithNoGaps VALUES (1, 'ディック');
+INSERT INTO SeqTblWithNoGaps VALUES (2, 'アン');
+INSERT INTO SeqTblWithNoGaps VALUES (3, 'ライル');
+INSERT INTO SeqTblWithNoGaps VALUES (4, 'カー');
+INSERT INTO SeqTblWithNoGaps VALUES (5, 'マリー');
+INSERT INTO SeqTblWithNoGaps VALUES (6, 'ベン');
+
+SELECT
+  seq,
+  name
+FROM SeqTblWithNoGaps;
+
+SELECT (
+  CASE WHEN COUNT(*) = MAX(seq) THEN '歯抜けなし' ELSE '歯抜けあり' END
+) FROM SeqTbl;
+
+SELECT (
+  CASE WHEN COUNT(*) = MAX(seq) THEN '歯抜けなし' ELSE '歯抜けあり' END
+) FROM SeqTblWithNoGaps;
+
+
+SELECT item FROM Items;
+SELECT
+  shop,
+  item
+FROM ShopItems;
+
+SELECT
+  SI.shop,
+  COUNT(SI.item) AS my_item_cnt,
+  ((SELECT COUNT(item) FROM Items) - COUNT(SI.item)) AS diff_cnt
+FROM ShopItems SI INNER JOIN Items I ON SI.item = I.item
+GROUP BY SI.shop;
+
+
+-- 1-7
+
+SELECT
+  prc_date,
+  prc_amt
+FROM Accounts;
+
+SELECT
+  prc_date,
+  prc_amt,
+  AVG(prc_amt) OVER (ORDER BY prc_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)
+FROM Accounts;
+
+SELECT
+  A2.prc_date,
+  A2.prc_amt,
+  (
+    SELECT AVG(
+      TMP.prc_amt) FROM (
+      SELECT
+        A1.prc_date,
+        A1.prc_amt
+      FROM Accounts A1
+      WHERE A2.prc_date >= A1.prc_date
+      ORDER BY A1.prc_date DESC
+      LIMIT 3
+    ) TMP
+  )
+FROM Accounts A2
+ORDER BY A2.prc_date;
+
+
+SELECT
+  prc_date,
+  prc_amt,
+  CASE WHEN cnt >= 3 THEN avg END
+FROM (SELECT
+  prc_date,
+  prc_amt,
+  COUNT(prc_amt) OVER (ORDER BY prc_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS cnt,
+  AVG(prc_amt) OVER (ORDER BY prc_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS avg
+FROM Accounts);
+
+SELECT
+  A2.prc_date,
+  A2.prc_amt,
+  (
+    SELECT CASE WHEN COUNT(TMP.prc_amt) >= 3 THEN AVG(
+      TMP.prc_amt
+    ) END FROM (
+      SELECT
+        A1.prc_date,
+        A1.prc_amt
+      FROM Accounts A1
+      WHERE A2.prc_date >= A1.prc_date
+      ORDER BY A1.prc_date DESC
+      LIMIT 3
+    ) TMP
+
+  )
+FROM Accounts A2
+ORDER BY A2.prc_date;
