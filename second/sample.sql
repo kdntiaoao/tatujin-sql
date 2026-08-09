@@ -331,26 +331,30 @@ GROUP BY EMP.employee
 ORDER BY child_cnt DESC;
 
 
-drop table Class_A;
-drop table Class_B;
+DROP TABLE Class_A;
+DROP TABLE Class_B;
 
 CREATE TABLE Class_A
-(id char(1),
- name varchar(30),
- PRIMARY KEY(id));
+(
+  id CHAR(1),
+  name VARCHAR(30),
+  PRIMARY KEY (id)
+);
 
 CREATE TABLE Class_B
-(id   char(1),
- name varchar(30),
- PRIMARY KEY(id));
+(
+  id CHAR(1),
+  name VARCHAR(30),
+  PRIMARY KEY (id)
+);
 
-INSERT INTO Class_A (id, name) VALUES('1', '田中');
-INSERT INTO Class_A (id, name) VALUES('2', '鈴木');
-INSERT INTO Class_A (id, name) VALUES('3', '伊集院');
+INSERT INTO Class_A (id, name) VALUES ('1', '田中');
+INSERT INTO Class_A (id, name) VALUES ('2', '鈴木');
+INSERT INTO Class_A (id, name) VALUES ('3', '伊集院');
 
-INSERT INTO Class_B (id, name) VALUES('1', '田中');
-INSERT INTO Class_B (id, name) VALUES('2', '内海');
-INSERT INTO Class_B (id, name) VALUES('4', '西園寺');
+INSERT INTO Class_B (id, name) VALUES ('1', '田中');
+INSERT INTO Class_B (id, name) VALUES ('2', '内海');
+INSERT INTO Class_B (id, name) VALUES ('4', '西園寺');
 
 MERGE INTO Class_A tgt
 USING Class_B src
@@ -369,3 +373,37 @@ SELECT
   name
 FROM Class_A
 ORDER BY id;
+
+
+-- 1-9
+
+SELECT
+  CASE
+    WHEN COUNT(*) = (SELECT COUNT(*) FROM Tbl_A) AND COUNT(*) = (SELECT COUNT(*) FROM Tbl_B) THEN '等しい' ELSE '異なる'
+  END AS result
+FROM (
+  SELECT * FROM Tbl_A
+  UNION
+  SELECT * FROM Tbl_B
+) TMP;
+
+SELECT DISTINCT emp
+FROM EmpSkills ES1
+WHERE
+  NOT EXISTS
+  (
+    SELECT skill
+    FROM Skills
+    EXCEPT
+    SELECT skill
+    FROM EmpSkills ES2
+    WHERE ES1.emp = ES2.emp
+  ) AND NOT EXISTS
+  (
+    SELECT skill
+    FROM EmpSkills ES2
+    WHERE ES1.emp = ES2.emp
+    EXCEPT
+    SELECT skill
+    FROM Skills
+  );
