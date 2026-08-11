@@ -407,3 +407,35 @@ WHERE
     SELECT skill
     FROM Skills
   );
+
+
+-- 1-10
+
+-- NOT EXISTS バージョン
+SELECT seq FROM Sequence N
+WHERE
+  seq BETWEEN 1 AND 12
+  AND NOT EXISTS (
+    SELECT * FROM SeqTbl S
+    WHERE N.seq = S.seq
+  );
+
+-- 外部結合バージョン
+SELECT N.seq
+FROM Sequence N LEFT OUTER JOIN SeqTbl S
+  ON N.seq = S.seq
+WHERE
+  N.seq BETWEEN 1 AND 12
+  AND S.seq IS NULL;
+
+
+SELECT
+  S1.seat AS start_seat,
+  '〜' AS " ",
+  S2.seat AS end_seat
+FROM Seats S1, Seats S2, Seats S3
+WHERE
+  S2.seat = S1.seat + (3 - 1)
+  AND S3.seat BETWEEN S1.seat AND S2.seat
+GROUP BY S1.seat, S2.seat
+HAVING COUNT(*) = SUM(CASE WHEN S3.status = '空' THEN 1 ELSE 0 END);
